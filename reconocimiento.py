@@ -9,17 +9,17 @@ def reconocer_usuario(cap):
     if not ret:
         return False, 0.0, None
 
-    # Convertir el frame de la cámara a RGB
+    #convertir el frame de la cámara a RGB
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    # Detectar y codificar rostros en el frame actual
+    #detecta y codificar rostros en el frame actual
     rostros_frame = face_recognition.face_locations(frame_rgb)
     codigos_frame = face_recognition.face_encodings(frame_rgb, rostros_frame)
 
     if not codigos_frame:
         return False, 0.0, None
 
-    # Iterar sobre los archivos .data en la carpeta usuarios
+    #itera sobre los archivos .data en la carpeta usuarios
     for archivo in os.listdir(RUTA_USUARIOS):
         if archivo.endswith(".data"):
             ruta_imagen = os.path.join(RUTA_USUARIOS, archivo)
@@ -28,7 +28,7 @@ def reconocer_usuario(cap):
                 codigos_usuario = face_recognition.face_encodings(imagen_usuario)
                 
                 if not codigos_usuario:
-                    continue  # saltar si no se detectó rostro en esa imagen
+                    continue  #saltar si no se detectó rostro en esa imagen
 
                 codigo_usuario = codigos_usuario[0]
 
@@ -38,7 +38,7 @@ def reconocer_usuario(cap):
                     confianza = (1 - distancia) * 100
 
                     if resultado[0]:
-                        usuario_id = os.path.splitext(archivo)[0]  # por ejemplo: USER001
+                        usuario_id = os.path.splitext(archivo)[0]  #como por ejemplo: USER001
                         return True, confianza, usuario_id
 
             except Exception as e:

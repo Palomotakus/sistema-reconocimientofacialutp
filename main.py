@@ -5,6 +5,8 @@ import cv2
 import os
 import csv
 from reconocimiento import reconocer_usuario
+from logs import guardar_log
+from registrar import mostrar_apartado_registro
 
 IMG_PATH = "assets/logo.png"
 CSV_PATH = "usuarios.csv"
@@ -15,10 +17,11 @@ if os.path.exists(CSV_PATH):
     with open(CSV_PATH, newline='', encoding='utf-8') as f:
         lector = csv.DictReader(f)
         for fila in lector:
-            datos_usuarios[fila["id"]] = {
-                "nombre": fila["nombre"],
-                "cargo": fila["cargo"],
-                "edad": fila["edad"]
+            datos_usuarios[fila["ID"]] = {
+                "nombre": fila["Nombre"],
+                "apellido": fila["Apellido"],
+                "cargo": fila["Cargo"],
+                "area": fila["Área"]
             }
 
 # Ventana principal
@@ -27,18 +30,21 @@ ventana.title("Sistema de Seguridad Facial")
 ventana.attributes("-fullscreen", True)
 ventana.configure(bg="#f0f0f0")
 
-# Frame donde va la cámara o imagen
-frame_imagen = tk.Frame(ventana, bg="#f0f0f0")
+# Frame para contener todo
+frame_contenido = tk.Frame(ventana, bg="#f0f0f0")
+frame_contenido.pack(expand=True, fill="both")
+
+# Frame para imagen o cámara
+frame_imagen = tk.Frame(frame_contenido, bg="#f0f0f0")
 frame_imagen.pack(pady=50)
 
 label_video = tk.Label(frame_imagen, bg="#f0f0f0")
 label_video.pack()
 
 # Texto informativo debajo de la cámara
-info_usuario = tk.Label(ventana, text="", font=("Arial", 16), bg="#f0f0f0")
+info_usuario = tk.Label(frame_contenido, text="", font=("Arial", 16), bg="#f0f0f0")
 info_usuario.pack()
 
-# Control de cámara
 cap = None
 camera_running = False
 mensaje = None
@@ -80,25 +86,19 @@ def detener_camara():
     camera_running = False
     if cap:
         cap.release()
-
     label_video.config(bg="#f0f0f0")
     info_usuario.config(text="", fg="black")
-
     if mensaje and mensaje.winfo_exists():
         mensaje.destroy()
-
-    btn_reconocer.config(text="Reconocer", bg="#4CAF50", command=reconocer_usuario_button)
+    btn_reconocer.config(text="Reconocer", bg="#4CAF50", command=reconocer_usuario_button, state="normal")
     mostrar_logo()
 
 def reconocer_usuario_button():
     global mensaje
     mostrar_camara()
-
     btn_reconocer.config(text="Detener", bg="red", command=detener_camara)
-
-    mensaje = tk.Label(ventana, text="", font=("Arial", 20), bg="yellow")
+    mensaje = tk.Label(frame_contenido, text="", font=("Arial", 20), bg="yellow")
     mensaje.place(relx=0.5, rely=0.8, anchor="center")
-
     cuenta_regresiva(5)
 
 def cuenta_regresiva(segundos):
@@ -108,38 +108,36 @@ def cuenta_regresiva(segundos):
         ventana.after(1000, cuenta_regresiva, segundos - 1)
     else:
         resultado, confianza, usuario_id = reconocer_usuario(cap)
-
-        #si fue reconocido
         if resultado and usuario_id in datos_usuarios:
             datos = datos_usuarios[usuario_id]
             texto = (f"Usuario reconocido con éxito\n\n"
-                     f"Nombre: {datos['nombre']}\n"
+                     f"Nombre: {datos['nombre']} {datos['apellido']}\n"
                      f"Cargo: {datos['cargo']}\n"
-                     f"Edad: {datos['edad']} años\n"
+                     f"Área: {datos['area']}\n"
                      f"Confianza: {confianza:.2f}%")
             info_usuario.config(text=texto, fg="green")
             label_video.config(bg="green")
-
-        #si no reconocido
         else:
             info_usuario.config(text="Usuario no reconocido", fg="red")
             label_video.config(bg="red")
-
-        #eliminar mensaje amarillo
+        guardar_log(usuario_id, confianza, resultado, datos_usuarios)
         if mensaje and mensaje.winfo_exists():
             mensaje.destroy()
 
-
+def ir_a_registro():
+    btn_reconocer.config(state="disabled")
+    mostrar_apartado_registro(ventana, frame_contenido, label_video, info_usuario, btn_reconocer)
+    
 # Botones
-btn_reconocer = tk.Button(ventana, text="Reconocer", font=("Arial", 16), bg="#4CAF50", fg="white",
+btn_reconocer = tk.Button(frame_contenido, text="Reconocer", font=("Arial", 16), bg="#4CAF50", fg="white",
                           width=20, height=2, command=reconocer_usuario_button)
 btn_reconocer.pack(pady=10)
 
-btn_registrar = tk.Button(ventana, text="Registrar", font=("Arial", 12), bg="#2196F3", fg="white",
-                          width=12)
+btn_registrar = tk.Button(frame_contenido, text="Registrar", font=("Arial", 12), bg="#2196F3", fg="white",
+                          width=12, command=ir_a_registro)
 btn_registrar.place(relx=1.0, rely=1.0, anchor="se", x=-20, y=-20)
 
-btn_salir = tk.Button(ventana, text="Salir", font=("Arial", 10), command=ventana.destroy)
+btn_salir = tk.Button(frame_contenido, text="Salir", font=("Arial", 10), command=ventana.destroy)
 btn_salir.place(relx=0.0, rely=1.0, anchor="sw", x=20, y=-20)
 
 mostrar_logo()

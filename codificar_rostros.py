@@ -7,7 +7,7 @@ def generar_encodings():
     codificados = {}
 
     for archivo in os.listdir(path):
-        if archivo.endswith(".jpg"):
+        if archivo.endswith(".data"):
             id_usuario = os.path.splitext(archivo)[0]
             ruta = os.path.join(path, archivo)
             imagen = face_recognition.load_image_file(ruta)
