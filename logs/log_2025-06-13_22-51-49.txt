@@ -1,0 +1,7 @@
+Fecha y hora: 2025-06-13 22:51:49
+Acceso concedido
+ID: USER001
+Nombre: FRANCO RODRIGUEZ
+Cargo: EMPLEADO
+Edad: 21
+Confianza: 68.11%

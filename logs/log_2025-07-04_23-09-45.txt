@@ -1,0 +1,6 @@
+Fecha y hora: 2025-07-04 23:09:45
+Acceso concedido
+ID: USER001
+Nombre: FRANCO
+Cargo: ADMIN
+Confianza: 68.14%
